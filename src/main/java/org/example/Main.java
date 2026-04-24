@@ -14,7 +14,28 @@ public class Main {
 
 //        String sql = "SELECT * FROM users WHERE age > 18 AND status = 'active'";
 
-        String sql = "SELECT * FROM users WHERE type = 'empl' AND (salary > 20000 OR age = 30)";
+//        String sql = "SELECT * FROM users WHERE a * 2 > b + 3";
+
+//        String sql = "SELECT u, b + 2 FROM users WHERE a * 2 > b + 3 AND a + b = 5";
+
+//        String sql = """
+//                SELECT c.customer_name, SUM(o.total_amount) as total_spent
+//                FROM Customers c
+//                JOIN Orders o ON c.customer_id = o.customer_id
+//                WHERE o.order_date >= '2023-01-01'
+//                GROUP BY c.customer_name
+//                HAVING SUM(o.total_amount) > (
+//                    SELECT AVG(total_amount) FROM Orders
+//                )
+//                ORDER BY total_spent DESC;
+//                """;
+        String sql = """
+                SELECT id, status, created_at, amount
+                FROM latest_transactions
+                WHERE status = 'processed'
+                ORDER BY created_at DESC
+                LIMIT 10;
+                """;
 
         try {
             SqlNode ast = Parser.parse(sql);
