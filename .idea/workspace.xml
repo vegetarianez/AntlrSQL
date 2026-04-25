@@ -4,12 +4,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="16611e1c-1db2-499b-8ff1-00b7673a3bda" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+    <list default="true" id="16611e1c-1db2-499b-8ff1-00b7673a3bda" name="Changes" comment="add JOIN, GROUP BY, expr and another">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/pom.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/org/example/Main.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/example/Main.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/org/example/Parser.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/example/Parser.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/org/example/SqlAstBuilder.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/example/SqlAstBuilder.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/org/example/SqlNodes.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/example/SqlNodes.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/org/example/antlr/Sql.g4" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/example/antlr/Sql.g4" afterDir="false" />
@@ -107,6 +104,15 @@
       <workItem from="1773772165015" duration="11000" />
       <workItem from="1775825778927" duration="2668000" />
     </task>
+    <task id="LOCAL-00001" summary="add JOIN, GROUP BY, expr and another">
+      <option name="closed" value="true" />
+      <created>1777044931550</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1777044931550</updated>
+    </task>
+    <option name="localTasksCounter" value="2" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -122,6 +128,10 @@
         </entry>
       </map>
     </option>
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="add JOIN, GROUP BY, expr and another" />
+    <option name="LAST_COMMIT_MESSAGE" value="add JOIN, GROUP BY, expr and another" />
   </component>
   <component name="XSLT-Support.FileAssociations.UIState">
     <expand />

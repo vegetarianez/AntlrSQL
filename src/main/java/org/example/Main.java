@@ -14,34 +14,32 @@ public class Main {
 
 //        String sql = "SELECT * FROM users WHERE age > 18 AND status = 'active'";
 
-//        String sql = "SELECT * FROM users WHERE a * 2 > b + 3";
+//        String sql = "SELECT * FROM users";
 
 //        String sql = "SELECT u, b + 2 FROM users WHERE a * 2 > b + 3 AND a + b = 5";
 
-//        String sql = """
-//                SELECT c.customer_name, SUM(o.total_amount) as total_spent
-//                FROM Customers c
-//                JOIN Orders o ON c.customer_id = o.customer_id
-//                WHERE o.order_date >= '2023-01-01'
-//                GROUP BY c.customer_name
-//                HAVING SUM(o.total_amount) > (
-//                    SELECT AVG(total_amount) FROM Orders
-//                )
-//                ORDER BY total_spent DESC;
-//                """;
         String sql = """
-                SELECT id, status, created_at, amount
-                FROM latest_transactions
-                WHERE status = 'processed'
-                ORDER BY created_at DESC
-                LIMIT 10;
+                SELECT 2 * 2, c.customer_name * 2, SUM(o.total_amount) as total_spent
+                FROM Customers c
+                JOIN Orders o ON o.customer_id = (SELECT u.statementId FROM user u)
+                WHERE o.order_date >= '2023-01-01'
+                GROUP BY c.customer_name
+                HAVING SUM(o.total_amount) > (
+                    SELECT AVG(total_amount) FROM Orders
+                )
+                ORDER BY total_spent DESC;
                 """;
+//        String sql = """
+//                SELECT id, status, created_at, amount
+//                FROM latest_transactions
+//                WHERE status = 'processed'
+//                ORDER BY created_at DESC
+//                LIMIT 10
+//                offset 5;
+//                """;
 
         try {
             SqlNode ast = Parser.parse(sql);
-
-            System.out.println("SQL AST Structure:");
-            System.out.println("==================");
 
             List<String> treeLines = ast.getTree();
             for (String line : treeLines) {

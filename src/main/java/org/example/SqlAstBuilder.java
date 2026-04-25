@@ -16,31 +16,32 @@ public class SqlAstBuilder extends SqlBaseVisitor<SqlNode> {
         ColumnListNode columnList = (ColumnListNode) visit(ctx.selectList());
         List<SqlNode> columns = columnList.getColumns();
 
-        SqlParser.TableReferenceContext tableRefCtx = ctx.tableSource().tableReference();
-        String tableName = tableRefCtx.IDENTIFIER(0).getText();
-        if (tableRefCtx.IDENTIFIER().size() > 1) { // Если есть алиас
-            tableName += " AS " + tableRefCtx.IDENTIFIER(1).getText();
+        SqlNode fromNode = null;
+        if (ctx.tableSource() != null) {
+            fromNode = visit(ctx.tableSource().tableReference());
         }
 
         List<SqlNode> joins = new ArrayList<>();
-        for (SqlParser.JoinPartContext joinCtx : ctx.tableSource().joinPart()) {
-            joins.add(visit(joinCtx));
+        if (ctx.tableSource() != null) {
+            for (SqlParser.JoinPartContext joinCtx : ctx.tableSource().joinPart()) {
+                joins.add(visit(joinCtx));
+            }
         }
 
         SqlNode whereNode = (ctx.whereClause() != null) ? visit(ctx.whereClause()) : null;
 
-        SqlNode groupByNode = null;
+        List<SqlNode> groupByNodes = new ArrayList<>();
         if (ctx.groupByClause() != null) {
             List<SqlNode> groupItems = new ArrayList<>();
             for (SqlParser.ExpressionContext exprCtx : ctx.groupByClause().expression()) {
                 groupItems.add(visit(exprCtx));
             }
-            groupByNode = new GroupByNode(groupItems);
+            groupByNodes.add(new GroupByNode(groupItems));
         }
 
-        SqlNode havingNode = null;
+        List<SqlNode> havingNodes = new ArrayList<>();
         if (ctx.havingClause() != null) {
-            havingNode = new HavingNode(visit(ctx.havingClause().expression()));
+            havingNodes.add(new HavingNode(visit(ctx.havingClause().expression())));
         }
 
         List<SqlNode> orderByNodes = new ArrayList<>();
@@ -50,48 +51,42 @@ public class SqlAstBuilder extends SqlBaseVisitor<SqlNode> {
             }
         }
 
-        String limit = (ctx.limitClause() != null) ? ctx.limitClause().NUMBER().getText() : null;
+        Integer limit = (ctx.limitClause() != null) ? Integer.parseInt(ctx.limitClause().NUMBER().getText()) : null;
 
-        return new SelectStatementNode(columns, tableName, joins, whereNode, groupByNode, havingNode, orderByNodes, limit);
+        Integer offset = (ctx.offsetClause() != null) ? Integer.parseInt(ctx.offsetClause().NUMBER().getText()) : null;
+
+        return new SelectStatementNode(columns, fromNode, joins, whereNode, groupByNodes, havingNodes, orderByNodes, limit, offset);
     }
 
     @Override
     public SqlNode visitJoinPart(SqlParser.JoinPartContext ctx) {
         String joinType = (ctx.joinType() != null) ? ctx.joinType().getText().toUpperCase() : "INNER";
 
-        // ИСПРАВЛЕНИЕ АЛИАСОВ В JOIN
-        SqlParser.TableReferenceContext tableRefCtx = ctx.tableReference();
-        String tableName = tableRefCtx.IDENTIFIER(0).getText();
-        if (tableRefCtx.IDENTIFIER().size() > 1) {
-            tableName += " AS " + tableRefCtx.IDENTIFIER(1).getText();
+        SqlNode tableNode = visit(ctx.tableReference());
+        SqlNode condition = visit(ctx.expression());
+
+        return new JoinNode(joinType, tableNode, condition);
+    }
+
+    @Override
+    public SqlNode visitTableReference(SqlParser.TableReferenceContext ctx) {
+        SqlNode child;
+        if (ctx.IDENTIFIER(0) != null) {
+            child = new TableNode(ctx.IDENTIFIER(0).getText());
+        } else {
+            child = visit(ctx.selectStatement());
         }
 
-        SqlNode condition = visit(ctx.expression());
-        return new JoinNode(joinType, tableName, condition);
+        if (ctx.IDENTIFIER().size() > 1 || (ctx.IDENTIFIER(0) == null && ctx.IDENTIFIER().size() == 1)) {
+            String alias = ctx.IDENTIFIER(ctx.IDENTIFIER().size() - 1).getText();
+            return new AsNode(alias, child);
+        }
+        return child;
     }
+
     @Override
     public SqlNode visitSubqueryExpr(SqlParser.SubqueryExprContext ctx) {
         return new SubqueryNode(visit(ctx.selectStatement()));
-    }
-
-    @Override
-    public SqlNode visitOrderByItem(SqlParser.OrderByItemContext ctx) {
-        SqlNode expr = visit(ctx.expression());
-        String order = "ASC"; // По умолчанию
-        if (ctx.ASC() != null) order = "ASC";
-        else if (ctx.DESC() != null) order = "DESC";
-
-        return new OrderByItemNode(expr, order);
-    }
-
-    @Override
-    public SqlNode visitFunctionCallExpr(SqlParser.FunctionCallExprContext ctx) {
-        String funcName = ctx.IDENTIFIER().getText();
-        List<SqlNode> args = new ArrayList<>();
-        for (SqlParser.ExpressionContext exprCtx : ctx.expression()) {
-            args.add(visit(exprCtx));
-        }
-        return new FunctionCallNode(funcName, args);
     }
 
     @Override
@@ -112,18 +107,11 @@ public class SqlAstBuilder extends SqlBaseVisitor<SqlNode> {
 
     @Override
     public SqlNode visitColumnItem(SqlParser.ColumnItemContext ctx) {
-        // Поскольку теперь колонка это expression, нам нужно парсить её как выражение
         SqlNode expr = visit(ctx.expression());
         String alias = (ctx.IDENTIFIER() != null) ? ctx.IDENTIFIER().getText() : null;
 
-        // Если это просто колонка (Identifier), сохраним старый вид отображения.
-        // Иначе это может быть функция: COUNT(id) AS val
-        if (expr instanceof ColumnNode && alias != null) {
-            return new ColumnNode(((ColumnNode)expr).toString().replace("COLUMN: ", ""), alias);
-        } else if (alias != null) {
-            // Можно создать отдельный узел для алиасов сложных выражений,
-            // но для простоты вернём просто выражение (алиасы отобразим как часть родителя, если нужно)
-            // В базовой версии возвращаем само выражение.
+        if (alias != null) {
+            return new AsNode(alias, expr);
         }
         return expr;
     }
@@ -131,6 +119,16 @@ public class SqlAstBuilder extends SqlBaseVisitor<SqlNode> {
     @Override
     public SqlNode visitWhereClause(SqlParser.WhereClauseContext ctx) {
         return visit(ctx.expression());
+    }
+
+    @Override
+    public SqlNode visitOrderByItem(SqlParser.OrderByItemContext ctx) {
+        SqlNode expr = visit(ctx.expression());
+        String order = "ASC";
+        if (ctx.DESC() != null) {
+            order = "DESC";
+        }
+        return new OrderByItemNode(expr, order);
     }
 
     @Override
@@ -163,6 +161,16 @@ public class SqlAstBuilder extends SqlBaseVisitor<SqlNode> {
         String op = ctx.getChild(1).getText();
         SqlNode right = visit(ctx.expression(1));
         return new LogicalNode(left, op, right);
+    }
+
+    @Override
+    public SqlNode visitFunctionCallExpr(SqlParser.FunctionCallExprContext ctx) {
+        String funcName = ctx.IDENTIFIER().getText();
+        List<SqlNode> args = new ArrayList<>();
+        for (SqlParser.ExpressionContext e : ctx.expression()) {
+            args.add(visit(e));
+        }
+        return new FunctionCallNode(funcName, args);
     }
 
     @Override

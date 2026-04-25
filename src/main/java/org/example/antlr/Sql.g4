@@ -21,6 +21,7 @@ ORDER: 'ORDER' | 'order';
 ASC: 'ASC' | 'asc';
 DESC: 'DESC' | 'desc';
 LIMIT: 'LIMIT' | 'limit';
+OFFSET: 'OFFSET' | 'offset';
 
 // --- Операторы и символы ---
 STAR: '*';
@@ -53,7 +54,8 @@ selectStatement: SELECT selectList
                  (GROUP BY groupByClause)?
                  (HAVING havingClause)?
                  (ORDER BY orderByClause)?
-                 (LIMIT limitClause)?;
+                 (LIMIT limitClause)?
+                 (OFFSET offsetClause)?;
 
 selectList: STAR # selectAll
           | columnItem (COMMA columnItem)* # selectItems;
@@ -61,8 +63,6 @@ selectList: STAR # selectAll
 columnItem: expression (AS? IDENTIFIER)?;
 
 tableSource: tableReference (joinPart)*;
-
-tableReference: IDENTIFIER (AS? IDENTIFIER)?;
 
 joinPart: joinType? JOIN tableReference ON expression;
 
@@ -82,6 +82,10 @@ orderByItem: expression (ASC | DESC)?;
 
 limitClause: NUMBER;
 
+offsetClause: NUMBER;
+
+tableReference: (IDENTIFIER | '(' selectStatement ')') (AS? IDENTIFIER)?;
+
 expression: expression (STAR | DIV) expression                # mathMulDivExpr
           | expression (PLUS | MINUS) expression              # mathAddSubExpr
           | expression (EQ | NEQ | GT | LT | GE | LE) expression  # comparisonExpr
@@ -90,7 +94,7 @@ expression: expression (STAR | DIV) expression                # mathMulDivExpr
           | IDENTIFIER (DOT IDENTIFIER)* # columnExpr
           | literal                                           # literalExpr
           | '(' expression ')'                                # parenExpr
-          | '(' selectStatement ')'                           # subqueryExpr // <-- ДОБАВЛЕНО
+          | '(' selectStatement ')'                           # subqueryExpr
           ;
 
 literal: NUMBER | STRING;
