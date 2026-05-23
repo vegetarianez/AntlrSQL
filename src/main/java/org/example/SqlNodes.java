@@ -40,8 +40,9 @@ interface SqlNode {
 
 class SelectStatementNode implements SqlNode {
     private final List<SqlNode> columns;
-    private final SqlNode fromNode;
     private final List<SqlNode> joins;
+    private final SqlNode fromNode;
+    //в fromNode может быть join
     private final SqlNode whereClause;
     private final List<SqlNode> groupByNodes;
     private final List<SqlNode> havingNodes;
@@ -91,6 +92,11 @@ class TableNode implements SqlNode {
 
     public TableNode(String name) {
         this.name = name;
+    }
+
+    // ДОБАВЛЕНО ДЛЯ СЕМАНТИЧЕСКОГО АНАЛИЗА
+    public String getName() {
+        return name;
     }
 
     @Override
@@ -169,12 +175,25 @@ class OrderByItemNode implements SqlNode {
 class FunctionCallNode implements SqlNode {
     private final String functionName;
     private final List<SqlNode> arguments;
+
     public FunctionCallNode(String functionName, List<SqlNode> arguments) {
         this.functionName = functionName;
         this.arguments = arguments;
     }
-    @Override public List<SqlNode> getChildren() { return arguments; }
-    @Override public String toString() { return "FUNCTION: " + functionName; }
+
+    public String getFunctionName() {
+        return functionName;
+    }
+
+    @Override
+    public List<SqlNode> getChildren() {
+        return arguments;
+    }
+
+    @Override
+    public String toString() {
+        return "FUNCTION: " + functionName;
+    }
 }
 
 class BinaryNode implements SqlNode {
@@ -213,13 +232,6 @@ class ColumnNode implements SqlNode {
     @Override public String toString() {
         return alias == null ? "COLUMN: " + name : "COLUMN: " + name + " AS " + alias;
     }
-}
-
-class SubqueryNode implements SqlNode {
-    private final SqlNode selectStatement;
-    public SubqueryNode(SqlNode selectStatement) { this.selectStatement = selectStatement; }
-    @Override public List<SqlNode> getChildren() { return Collections.singletonList(selectStatement); }
-    @Override public String toString() { return "SUBQUERY"; }
 }
 
 class AllColumnsNode implements SqlNode {

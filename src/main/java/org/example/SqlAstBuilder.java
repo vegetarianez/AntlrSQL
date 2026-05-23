@@ -85,11 +85,6 @@ public class SqlAstBuilder extends SqlBaseVisitor<SqlNode> {
     }
 
     @Override
-    public SqlNode visitSubqueryExpr(SqlParser.SubqueryExprContext ctx) {
-        return new SubqueryNode(visit(ctx.selectStatement()));
-    }
-
-    @Override
     public SqlNode visitSelectAll(SqlParser.SelectAllContext ctx) {
         List<SqlNode> items = new ArrayList<>();
         items.add(new AllColumnsNode());

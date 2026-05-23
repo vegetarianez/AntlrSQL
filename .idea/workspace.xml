@@ -4,12 +4,13 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="16611e1c-1db2-499b-8ff1-00b7673a3bda" name="Changes" comment="add JOIN, GROUP BY, expr and another">
+    <list default="true" id="16611e1c-1db2-499b-8ff1-00b7673a3bda" name="Changes" comment="cool commit extra commit">
+      <change afterPath="$PROJECT_DIR$/src/main/java/org/example/SemanticAnalyzer.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/org/example/SemanticException.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/org/example/Main.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/example/Main.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/org/example/SqlAstBuilder.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/example/SqlAstBuilder.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/org/example/SqlNodes.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/example/SqlNodes.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/org/example/antlr/Sql.g4" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/example/antlr/Sql.g4" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -36,6 +37,10 @@
   </component>
   <component name="MavenRunner">
     <option name="jreName" value="ms-17" />
+  </component>
+  <component name="ProblemsViewState">
+    <option name="selectedTabId" value="CurrentFile" />
+    <option name="showPreview" value="true" />
   </component>
   <component name="ProjectColorInfo">{
   &quot;associatedIndex&quot;: 6
@@ -112,7 +117,15 @@
       <option name="project" value="LOCAL" />
       <updated>1777044931550</updated>
     </task>
-    <option name="localTasksCounter" value="2" />
+    <task id="LOCAL-00002" summary="cool commit extra commit">
+      <option name="closed" value="true" />
+      <created>1777119271719</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1777119271721</updated>
+    </task>
+    <option name="localTasksCounter" value="3" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -131,7 +144,8 @@
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="add JOIN, GROUP BY, expr and another" />
-    <option name="LAST_COMMIT_MESSAGE" value="add JOIN, GROUP BY, expr and another" />
+    <MESSAGE value="cool commit extra commit" />
+    <option name="LAST_COMMIT_MESSAGE" value="cool commit extra commit" />
   </component>
   <component name="XSLT-Support.FileAssociations.UIState">
     <expand />
