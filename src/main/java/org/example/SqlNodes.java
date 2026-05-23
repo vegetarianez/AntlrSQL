@@ -42,6 +42,9 @@ class SelectStatementNode implements SqlNode {
     private final List<SqlNode> columns;
     private final List<SqlNode> joins;
     private final SqlNode fromNode;
+
+    public SqlNode getFromNode() { return fromNode; }
+    public List<SqlNode> getJoins() { return joins; }
     //в fromNode может быть join
     private final SqlNode whereClause;
     private final List<SqlNode> groupByNodes;
@@ -49,6 +52,13 @@ class SelectStatementNode implements SqlNode {
     private final List<SqlNode> orderBy;
     private final Integer limit;
     private final Integer offset;
+
+    public SqlNode getWhereClause() {
+        return whereClause;
+    }
+
+    public List<SqlNode> getColumns() { return columns; }
+    public List<SqlNode> getGroupByNodes() { return groupByNodes; }
 
     public SelectStatementNode(List<SqlNode> columns, SqlNode fromNode, List<SqlNode> joins,
                                SqlNode whereClause, List<SqlNode> groupByNodes, List<SqlNode> havingNodes,
@@ -196,6 +206,28 @@ class FunctionCallNode implements SqlNode {
     }
 }
 
+class LikeNode implements SqlNode {
+    private final SqlNode left;
+    private final SqlNode right;
+    private final boolean isNot; // Для поддержки NOT LIKE
+
+    public LikeNode(SqlNode left, SqlNode right, boolean isNot) {
+        this.left = left;
+        this.right = right;
+        this.isNot = isNot;
+    }
+
+    @Override
+    public List<SqlNode> getChildren() {
+        return Arrays.asList(left, right);
+    }
+
+    @Override
+    public String toString() {
+        return isNot ? "NOT LIKE" : "LIKE";
+    }
+}
+
 class BinaryNode implements SqlNode {
     private final SqlNode left;
     private final String op;
@@ -222,6 +254,43 @@ class LogicalNode implements SqlNode {
     @Override public String toString() { return "LOGIC: " + op.toUpperCase(); }
 }
 
+class InNode implements SqlNode {
+    private final SqlNode left;
+    private final SqlNode right;
+    private final boolean isNot; // Для поддержки NOT IN
+
+    public InNode(SqlNode left, SqlNode right, boolean isNot) {
+        this.left = left;
+        this.right = right;
+        this.isNot = isNot;
+    }
+
+    public boolean isNot() { return isNot; }
+    @Override public List<SqlNode> getChildren() { return Arrays.asList(left, right); }
+    @Override public String toString() { return isNot ? "NOT IN" : "IN"; }
+}
+
+class IsNullNode implements SqlNode {
+    private final SqlNode left;
+    private final boolean isNot; // Для поддержки IS NOT NULL
+
+    public IsNullNode(SqlNode left, boolean isNot) {
+        this.left = left;
+        this.isNot = isNot;
+    }
+
+    public boolean isNot() { return isNot; }
+    @Override public List<SqlNode> getChildren() { return Collections.singletonList(left); }
+    @Override public String toString() { return isNot ? "IS NOT NULL" : "IS NULL"; }
+}
+
+class ExpressionListNode implements SqlNode {
+    private final List<SqlNode> items;
+    public ExpressionListNode(List<SqlNode> items) { this.items = items; }
+    @Override public List<SqlNode> getChildren() { return items; }
+    @Override public String toString() { return "LIST"; }
+}
+
 class ColumnNode implements SqlNode {
     private final String name;
     private final String alias;
@@ -241,6 +310,8 @@ class AllColumnsNode implements SqlNode {
 class LiteralNode implements SqlNode {
     private final String value;
     public LiteralNode(String value) { this.value = value; }
+
+    public String getValue() { return value; }
     @Override public String toString() { return "LITERAL: " + value; }
 }
 

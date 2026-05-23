@@ -4,13 +4,15 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="16611e1c-1db2-499b-8ff1-00b7673a3bda" name="Changes" comment="cool commit extra commit">
-      <change afterPath="$PROJECT_DIR$/src/main/java/org/example/SemanticAnalyzer.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/org/example/SemanticException.java" afterDir="false" />
+    <list default="true" id="16611e1c-1db2-499b-8ff1-00b7673a3bda" name="Changes" comment="add att2">
+      <change afterPath="$PROJECT_DIR$/src/main/java/org/example/ExpressionEvaluator.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/org/example/TableContext.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/org/example/Main.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/example/Main.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/org/example/SemanticAnalyzer.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/example/SemanticAnalyzer.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/org/example/SqlAstBuilder.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/example/SqlAstBuilder.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/org/example/SqlNodes.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/example/SqlNodes.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/org/example/antlr/Sql.g4" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/example/antlr/Sql.g4" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -125,7 +127,15 @@
       <option name="project" value="LOCAL" />
       <updated>1777119271721</updated>
     </task>
-    <option name="localTasksCounter" value="3" />
+    <task id="LOCAL-00003" summary="add att2">
+      <option name="closed" value="true" />
+      <created>1779531963155</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1779531963155</updated>
+    </task>
+    <option name="localTasksCounter" value="4" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -145,7 +155,8 @@
   <component name="VcsManagerConfiguration">
     <MESSAGE value="add JOIN, GROUP BY, expr and another" />
     <MESSAGE value="cool commit extra commit" />
-    <option name="LAST_COMMIT_MESSAGE" value="cool commit extra commit" />
+    <MESSAGE value="add att2" />
+    <option name="LAST_COMMIT_MESSAGE" value="add att2" />
   </component>
   <component name="XSLT-Support.FileAssociations.UIState">
     <expand />

@@ -1,83 +1,109 @@
 package org.example;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class Main {
+
+    public static TableContext resolveTable(SqlNode node, Map<String, TableContext> db) {
+        if (node instanceof TableNode t) {
+            return db.get(t.getName().toLowerCase());
+        }
+        if (node instanceof AsNode asNode) {
+            TableContext t = resolveTable(asNode.getChildren().get(0), db);
+            String alias = asNode.toString().replace("AS: ", "").trim();
+            return t.withAlias(alias);
+        }
+        throw new RuntimeException("Неизвестный узел таблицы: " + node);
+    }
+
     public static void main(String[] args) {
-//        String sql = """
-//            SELECT id, name AS username, age
-//            FROM users
-//            WHERE age > 18 AND status = 'active'
-//            """;
-
-//        String sql = "SELECT id, name AS username, age FROM users WHERE age > 18 OR status = 'active'";
-
-//        String sql = "SELECT * FROM users WHERE age > 18 AND status = 'active'";
-
-//        String sql = "SELECT * FROM users";
-
-//        String sql = "SELECT u, b + 2 FROM users WHERE a * 2 > b + 3 AND a + b = 5";
-
-//        String sql = """
-//                SELECT 2 * 2, c.customer_name * 2, SUM(o.total_amount) as total_spent
-//                FROM Customers c
-//                JOIN Orders o ON o.customer_id = (SELECT u.statementId FROM user u)
-//                WHERE o.order_date >= '2023-01-01'
-//                GROUP BY c.customer_name
-//                HAVING SUM(o.total_amount) > (
-//                    SELECT AVG(total_amount) FROM Orders
-//                )
-//                ORDER BY total_spent DESC;
-//                """;
-
-//        String sql = """
-//                SELECT c.customer_name, SUM(o.total_amount) as total_spent
-//                FROM Customers c
-//                JOIN Orders o ON c.customer_id = o.customer_id
-//                WHERE o.order_date >= '2023-01-01'
-//                GROUP BY c.customer_name
-//                HAVING SUM(o.total_amount) > (
-//                    SELECT AVG(total_amount) FROM Orders
-//                )
-//                ORDER BY total_spent DESC
-//                LIMIT 10 OFFSET 0;
-//                """;
-
         String sql = """
-    SELECT UPPER(customer_name) 
-    FROM customers;
-    """;
-//        String sql = """
-//                SELECT id, status, created_at, amount
-//                FROM latest_transactions
-//                WHERE status = 'processed'
-//                ORDER BY created_at DESC
-//                LIMIT 10
-//                offset 5;
-//                """;
+                SELECT u.username, o.order_id * 2
+                FROM users u
+                JOIN orders o ON u.id = o.user_id
+                """;
 
-        try {
-            // 1. Синтаксический анализ (построение дерева)
-            SqlNode ast = Parser.parse(sql);
+        SqlNode ast = Parser.parse(sql);
+        SelectStatementNode selectNode = (SelectStatementNode) ast;
+        ExpressionEvaluator evaluator = new ExpressionEvaluator();
 
-            // 2. Семантический анализ (проверка смысла)
-            SemanticAnalyzer analyzer = new SemanticAnalyzer();
-            analyzer.analyze(ast);
-            System.out.println("✅ Семантический анализ пройден успешно!\n");
+        // --- СОЗДАЕМ МИНИ-БАЗУ ДАННЫХ ---
+        Map<String, TableContext> database = new HashMap<>();
 
-            // 3. Вывод AST
-            System.out.println("SQL AST Structure:");
-            System.out.println("==================");
-            List<String> treeLines = ast.getTree();
-            for (String line : treeLines) {
-                System.out.println(line);
+        database.put("users", new TableContext(
+            new String[]{"id", "username", "age"},
+            new Object[][]{
+                {1, "Alice", 25.0},
+                {2, "Bob", 17.0},
+                {3, "Charlie", 30.0},
+                {4, "Dave", 40.0}
             }
+        ));
 
-        } catch (SemanticException e) {
-            System.err.println("❌ Ошибка семантики: " + e.getMessage());
-        } catch (Exception e) {
-            System.err.println("❌ Ошибка парсинга: " + e.getMessage());
-            e.printStackTrace();
+        database.put("orders", new TableContext(
+            new String[]{"order_id", "user_id", "amount", "status"},
+            new Object[][]{
+                {101, 1, 500.0, "PAID"},
+                {102, 1, 50.0, "PENDING"},
+                {103, 3, 250.0, "PAID"},
+                {104, 2, 1000.0, "PAID"},
+                {105, 99, 777.0, "GHOST"}
+            }
+        ));
+
+        // --- 1. ДОСТАЕМ ГЛАВНУЮ ТАБЛИЦУ (FROM) ---
+        TableContext context = resolveTable(selectNode.getFromNode(), database);
+
+        // --- 2. ПРИМЕНЯЕМ ВСЕ JOINS ---
+        if (selectNode.getJoins() != null) {
+            for (SqlNode joinNode : selectNode.getJoins()) {
+                JoinNode jn = (JoinNode) joinNode;
+                String type = jn.toString().replace("JOIN (", "").replace(")", "").trim(); // INNER, LEFT...
+                SqlNode rightTableNode = jn.getChildren().get(0);
+                SqlNode onCondition = jn.getChildren().get(1);
+
+                TableContext rightTable = resolveTable(rightTableNode, database);
+
+                context = context.join(rightTable, type, onCondition, evaluator);
+            }
+        }
+
+        // --- 3. ФИЛЬТРУЕМ И ВЫВОДИМ РЕЗУЛЬТАТ ---
+        SqlNode whereClause = selectNode.getWhereClause();
+        List<SqlNode> selectedColumns = selectNode.getColumns();
+
+        System.out.println("Результат выполнения запроса:");
+        for (int i = 0; i < context.getRowCount(); i++) {
+            Object isMatch = evaluator.evaluate(whereClause, context, i);
+
+            if (isMatch instanceof Boolean && (Boolean) isMatch) {
+                StringBuilder rowOutput = new StringBuilder();
+                boolean isSelectAll = selectedColumns.size() == 1 && selectedColumns.get(0) instanceof AllColumnsNode;
+
+                if (isSelectAll) {
+                    for (String colName : context.getColumnNames()) {
+                        rowOutput.append(colName).append(": ").append(context.getValue(colName, i)).append(" | ");
+                    }
+                } else {
+                    for (SqlNode colNode : selectedColumns) {
+                        Object value = evaluator.evaluate(colNode, context, i);
+
+                        String colName;
+                        if (colNode instanceof AsNode asNode) {
+                            colName = asNode.toString().replace("AS: ", "").trim();
+                        } else if (colNode instanceof ColumnNode) {
+                            colName = colNode.toString().replace("COLUMN: ", "").trim();
+                        } else {
+                            colName = "expr_result";
+                        }
+
+                        rowOutput.append(colName).append(": ").append(value).append(" | ");
+                    }
+                }
+                System.out.println(rowOutput.substring(0, rowOutput.length() - 3));
+            }
         }
     }
 }

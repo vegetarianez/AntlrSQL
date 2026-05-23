@@ -7,12 +7,14 @@ WHERE: 'WHERE' | 'where';
 AS: 'AS' | 'as';
 AND: 'AND' | 'and';
 OR: 'OR' | 'or';
+NOT: 'NOT' | 'not';
 
 JOIN: 'JOIN' | 'join';
 ON: 'ON' | 'on';
 INNER: 'INNER' | 'inner';
 LEFT: 'LEFT' | 'left';
 RIGHT: 'RIGHT' | 'right';
+FULL: 'FULL' | 'full';
 OUTER: 'OUTER' | 'outer';
 GROUP: 'GROUP' | 'group';
 BY: 'BY' | 'by';
@@ -23,7 +25,11 @@ DESC: 'DESC' | 'desc';
 LIMIT: 'LIMIT' | 'limit';
 OFFSET: 'OFFSET' | 'offset';
 
-// --- Операторы и символы ---
+LIKE: 'LIKE' | 'like';
+IN: 'IN' | 'in';
+IS: 'IS' | 'is';
+NULL_VAL: 'NULL' | 'null'; // Назвали NULL_VAL, чтобы не было конфликтов в Java
+
 STAR: '*';
 DIV: '/';
 PLUS: '+';
@@ -38,14 +44,12 @@ LE: '<=';
 DOT: '.';
 SEMI: ';';
 
-// --- Лексемы ---
 NUMBER: [0-9]+ ('.' [0-9]+)?;
 STRING: '\'' .*? '\'';
 IDENTIFIER: [a-zA-Z_][a-zA-Z0-9_]*;
 
 WS: [ \t\r\n]+ -> skip;
 
-// --- Правила парсера ---
 parse: selectStatement SEMI? EOF;
 
 selectStatement: SELECT selectList
@@ -68,7 +72,8 @@ joinPart: joinType? JOIN tableReference ON expression;
 
 joinType: INNER
         | LEFT OUTER?
-        | RIGHT OUTER?;
+        | RIGHT OUTER?
+        | FULL OUTER?;
 
 whereClause: expression;
 
@@ -86,15 +91,18 @@ offsetClause: NUMBER;
 
 tableReference: (IDENTIFIER | '(' selectStatement ')') (AS? IDENTIFIER)?;
 
-expression: expression (STAR | DIV) expression                # mathMulDivExpr
-          | expression (PLUS | MINUS) expression              # mathAddSubExpr
-          | expression (EQ | NEQ | GT | LT | GE | LE) expression  # comparisonExpr
-          | expression (AND | OR) expression                  # logicalExpr
-          | IDENTIFIER '(' (expression (COMMA expression)*)? ')' # functionCallExpr
+expression: expression (STAR | DIV) expression                            # mathMulDivExpr
+          | expression (PLUS | MINUS) expression                          # mathAddSubExpr
+          | expression (EQ | NEQ | GT | LT | GE | LE) expression          # comparisonExpr
+          | expression NOT? LIKE expression                               # likeExpr
+          | expression NOT? IN '(' (selectStatement | expression (COMMA expression)*) ')' # inExpr
+          | expression IS NOT? NULL_VAL                                   # isNullExpr
+          | expression (AND | OR) expression                              # logicalExpr
+          | IDENTIFIER '(' (expression (COMMA expression)*)? ')'          # functionCallExpr
           | IDENTIFIER (DOT IDENTIFIER)* # columnExpr
-          | literal                                           # literalExpr
-          | '(' expression ')'                                # parenExpr
-          | '(' selectStatement ')'                           # subqueryExpr
+          | literal                                                       # literalExpr
+          | '(' expression ')'                                            # parenExpr
+          | '(' selectStatement ')'                                       # subqueryExpr
           ;
 
-literal: NUMBER | STRING;
+literal: NUMBER | STRING | NULL_VAL;

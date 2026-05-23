@@ -69,6 +69,40 @@ public class SqlAstBuilder extends SqlBaseVisitor<SqlNode> {
     }
 
     @Override
+    public SqlNode visitIsNullExpr(SqlParser.IsNullExprContext ctx) {
+        SqlNode left = visit(ctx.expression());
+        boolean isNot = ctx.NOT() != null;
+        return new IsNullNode(left, isNot);
+    }
+
+    @Override
+    public SqlNode visitInExpr(SqlParser.InExprContext ctx) {
+        SqlNode left = visit(ctx.expression(0));
+        boolean isNot = ctx.NOT() != null;
+
+        SqlNode right;
+        if (ctx.selectStatement() != null) {
+            right = visit(ctx.selectStatement());
+        } else {
+            List<SqlNode> items = new ArrayList<>();
+            for (int i = 1; i < ctx.expression().size(); i++) {
+                items.add(visit(ctx.expression(i)));
+            }
+            right = new ExpressionListNode(items);
+        }
+
+        return new InNode(left, right, isNot);
+    }
+
+    @Override
+    public SqlNode visitLikeExpr(SqlParser.LikeExprContext ctx) {
+        SqlNode left = visit(ctx.expression(0));
+        SqlNode right = visit(ctx.expression(1));
+        boolean isNot = ctx.NOT() != null; // Проверяем, есть ли слово NOT
+        return new LikeNode(left, right, isNot);
+    }
+
+    @Override
     public SqlNode visitTableReference(SqlParser.TableReferenceContext ctx) {
         SqlNode child;
         if (ctx.IDENTIFIER(0) != null) {
