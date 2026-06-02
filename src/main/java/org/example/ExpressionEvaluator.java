@@ -52,12 +52,10 @@ public class ExpressionEvaluator {
 
             boolean match = false;
 
-            // Если это список значений IN (1, 2, 'Alice')
             if (rightNode instanceof ExpressionListNode listNode) {
                 for (SqlNode itemNode : listNode.getChildren()) {
                     Object itemObj = evaluate(itemNode, context, rowIndex);
 
-                    // Сравниваем через String, чтобы избежать ошибок с типами Double/String
                     if (itemObj != null && String.valueOf(leftObj).equals(String.valueOf(itemObj))) {
                         match = true;
                         break;

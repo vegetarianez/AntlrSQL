@@ -50,13 +50,11 @@ public class TableContext {
 
         List<Object[]> resultData = new ArrayList<>();
         TableContext tempContext = new TableContext(newCols, new Object[1][newCols.length]);
-
-        // Массив, чтобы запоминать, какие строки из правой таблицы нашли пару
+        
         boolean[] rightMatched = new boolean[rightTable.getRowCount()];
 
         String type = joinType.toUpperCase();
 
-        // 2. Перемножаем строки
         for (int i = 0; i < this.getRowCount(); i++) {
             boolean leftMatched = false;
             for (int j = 0; j < rightTable.getRowCount(); j++) {
@@ -70,10 +68,9 @@ public class TableContext {
                 if (match instanceof Boolean && (Boolean) match) {
                     resultData.add(combinedRow);
                     leftMatched = true;
-                    rightMatched[j] = true; // Отмечаем, что правая строка нашла пару
+                    rightMatched[j] = true;
                 }
             }
-            // Поддержка LEFT JOIN и FULL JOIN (добиваем null-ами левую строку, если нет пары)
             if (!leftMatched && (type.contains("LEFT") || type.contains("FULL"))) {
                 Object[] combinedRow = new Object[newCols.length];
                 System.arraycopy(this.data[i], 0, combinedRow, 0, this.columnNames.length);
@@ -81,13 +78,10 @@ public class TableContext {
             }
         }
 
-        // 3. Поддержка RIGHT JOIN и FULL JOIN
-        // Проходимся по правой таблице и ищем "одиноких" (у кого rightMatched == false)
         if (type.contains("RIGHT") || type.contains("FULL")) {
             for (int j = 0; j < rightTable.getRowCount(); j++) {
                 if (!rightMatched[j]) {
                     Object[] combinedRow = new Object[newCols.length];
-                    // Левая часть остается пустой (null), копируем только правую
                     System.arraycopy(rightTable.data[j], 0, combinedRow, this.columnNames.length, rightTable.columnNames.length);
                     resultData.add(combinedRow);
                 }
