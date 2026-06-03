@@ -45,6 +45,7 @@ class SelectStatementNode implements SqlNode {
 
     public SqlNode getFromNode() { return fromNode; }
     public List<SqlNode> getJoins() { return joins; }
+    public List<SqlNode> getOrderBy() { return orderBy; }
     //в fromNode может быть join
     private final SqlNode whereClause;
     private final List<SqlNode> groupByNodes;
@@ -177,6 +178,13 @@ class OrderByItemNode implements SqlNode {
     public OrderByItemNode(SqlNode expression, String order) {
         this.expression = expression;
         this.order = order;
+    }
+    public SqlNode getExpression() {
+        return expression;
+    }
+
+    public boolean isDesc() {
+        return order != null && order.toUpperCase().contains("DESC");
     }
     @Override public List<SqlNode> getChildren() { return Collections.singletonList(expression); }
     @Override public String toString() { return "ORDER BY (" + order + ")"; }
